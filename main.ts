@@ -23,6 +23,9 @@ radio.onReceivedValue(function (name, value) {
 function showRainbow () {
     tileDisplay.setBrightness(bright)
     tileDisplay.showRainbow(1, 360)
+    basic.pause(500)
+    tileDisplay.rotate(50)
+    tileDisplay.show()
 }
 let tileDisplay: Kitronik_Zip_Tile.ZIPTileDisplay = null
 let hue = 0
