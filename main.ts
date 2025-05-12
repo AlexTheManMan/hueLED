@@ -4,12 +4,10 @@ input.onButtonPressed(Button.A, function () {
 function showHue (hue: number) {
     tileDisplay.setBrightness(bright)
     tileDisplay.showRainbow(hue, hue)
+    tileDisplay.show()
 }
 input.onButtonPressed(Button.B, function () {
     showRainbow()
-})
-input.onGesture(Gesture.Shake, function () {
-	
 })
 radio.onReceivedValue(function (name, value) {
     if (name == "bright") {
@@ -23,30 +21,69 @@ radio.onReceivedValue(function (name, value) {
         showHue(hue)
     }
 })
+input.onGesture(Gesture.ThreeG, function () {
+    if (_3gToggle == 0) {
+        music._playDefaultBackground(music.builtInPlayableMelody(Melodies.BaDing), music.PlaybackMode.InBackground)
+        _3gToggle = 1
+        basic.pause(500)
+    } else {
+        music._playDefaultBackground(music.builtInPlayableMelody(Melodies.JumpUp), music.PlaybackMode.InBackground)
+        _3gToggle = 0
+    }
+})
 function showRainbow () {
     tileDisplay.setBrightness(bright)
     tileDisplay.showRainbow(1, 360)
+    tileDisplay.show()
 }
-let height = 0
+let angle = 0
 let tileDisplay: Kitronik_Zip_Tile.ZIPTileDisplay = null
 let hue = 0
 let bright = 0
-let prevHeight = 0
-let diff = 0
+let _3gToggle = 0
+_3gToggle = 0
 music.setVolume(16)
 radio.setGroup(1)
 bright = 16
 hue = 180
 tileDisplay = Kitronik_Zip_Tile.createZIPTileDisplay(1, 1, Kitronik_Zip_Tile.UBitLocations.Hidden)
 tileDisplay.setBrightness(bright)
+tileDisplay.showColor(Kitronik_Zip_Tile.colors(ZipLedColors.White))
 basic.forever(function () {
-    if (input.logoIsPressed()) {
-        height = Math.round(input.acceleration(Dimension.Z) / 100)
-        if (height <= 9) {
-            tileDisplay.showColor(Kitronik_Zip_Tile.colors(ZipLedColors.Green))
+    if (_3gToggle == 1) {
+        angle = input.rotation(Rotation.Roll)
+        if (angle >= -140 && angle <= -90) {
+            hue += -1
+            if (hue < 1) {
+                hue = 360
+            }
+            tileDisplay.showRainbow(hue, hue)
+            tileDisplay.show()
         }
-        if (height >= 11) {
-            tileDisplay.showColor(Kitronik_Zip_Tile.colors(ZipLedColors.Orange))
+        if (angle <= 140 && angle >= 90) {
+            hue += 1
+            if (hue > 360) {
+                hue = 1
+            }
+            tileDisplay.showRainbow(hue, hue)
+            tileDisplay.show()
+        }
+        angle = input.rotation(Rotation.Pitch)
+        if (angle >= -140 && angle <= -90) {
+            bright += -0.2
+            if (bright < 3) {
+                bright = 3
+            }
+            tileDisplay.setBrightness(bright)
+            tileDisplay.show()
+        }
+        if (angle <= 140 && angle >= 90) {
+            bright += 0.2
+            if (bright > 32) {
+                bright = 32
+            }
+            tileDisplay.setBrightness(bright)
+            tileDisplay.show()
         }
     }
 })
