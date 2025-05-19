@@ -50,7 +50,6 @@ radio.onReceivedValue(function (name, value) {
     if (name == "bright") {
         music._playDefaultBackground(music.builtInPlayableMelody(Melodies.BaDing), music.PlaybackMode.InBackground)
         bright = value
-        showRainbow()
     }
     if (name == "hue") {
         music._playDefaultBackground(music.builtInPlayableMelody(Melodies.BaDing), music.PlaybackMode.InBackground)
