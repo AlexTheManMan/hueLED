@@ -1,14 +1,17 @@
+function prepareHueTransition () {
+    music._playDefaultBackground(music.builtInPlayableMelody(Melodies.PowerUp), music.PlaybackMode.InBackground)
+    _3gToggle = 0
+    showRainbow()
+    basic.pause(5000)
+    hueTransitionDueMS = period * 1000 / 360
+    screenUpToggle = 1
+}
 input.onButtonPressed(Button.A, function () {
     showHue()
 })
 input.onGesture(Gesture.ScreenUp, function () {
     if (screenUpToggle == 0) {
-        music._playDefaultBackground(music.builtInPlayableMelody(Melodies.PowerUp), music.PlaybackMode.InBackground)
-        _3gToggle = 0
-        showRainbow()
-        basic.pause(3000)
-        hueTransitionDueMS = period * 1000 / 360
-        screenUpToggle = 1
+        prepareHueTransition()
     } else {
         music._playDefaultBackground(music.builtInPlayableMelody(Melodies.PowerDown), music.PlaybackMode.InBackground)
         screenUpToggle = 0
@@ -52,7 +55,12 @@ radio.onReceivedValue(function (name, value) {
     if (name == "hue") {
         music._playDefaultBackground(music.builtInPlayableMelody(Melodies.BaDing), music.PlaybackMode.InBackground)
         hue = value
+        screenUpToggle = 0
         showHue()
+    }
+    if (name == "period") {
+        period = value
+        prepareHueTransition()
     }
 })
 function adjustBrightness () {
