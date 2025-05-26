@@ -6,17 +6,56 @@ function prepareHueTransition () {
     hueTransitionDueMS = period * 1000 / 360
     screenUpToggle = 1
 }
+function toggleMode () {
+    if (!(input.buttonIsPressed(Button.AB))) {
+        if (_3gToggle == 0) {
+            music._playDefaultBackground(music.builtInPlayableMelody(Melodies.JumpUp), music.PlaybackMode.InBackground)
+            _3gToggle = 1
+        } else {
+            music._playDefaultBackground(music.builtInPlayableMelody(Melodies.JumpDown), music.PlaybackMode.InBackground)
+            _3gToggle = 0
+        }
+    }
+}
+function adjustPeriod () {
+    angle = input.rotation(Rotation.Roll)
+    if (angle >= -150 && angle <= -30) {
+        period += -1
+        if (period < 5) {
+            period = 5
+        }
+        periodChanged = 1
+    }
+    if (angle <= 150 && angle >= 30) {
+        period += 1
+        if (period > 360) {
+            period = 360
+        }
+        periodChanged = 1
+    }
+    led.plotBarGraph(
+    period,
+    360
+    )
+}
 input.onButtonPressed(Button.A, function () {
-    showHue()
+    toggleMode()
 })
 input.onGesture(Gesture.ScreenUp, function () {
-    if (screenUpToggle == 0) {
-        prepareHueTransition()
-    } else {
-        music._playDefaultBackground(music.builtInPlayableMelody(Melodies.PowerDown), music.PlaybackMode.InBackground)
-        screenUpToggle = 0
+    if (!(input.buttonIsPressed(Button.AB))) {
+        if (screenUpToggle == 0) {
+            prepareHueTransition()
+        } else {
+            music._playDefaultBackground(music.builtInPlayableMelody(Melodies.PowerDown), music.PlaybackMode.InBackground)
+            screenUpToggle = 0
+        }
     }
 })
+function printTemperature () {
+    temp = input.temperature()
+    basic.showString("" + (temp))
+    basic.showString("C")
+}
 function showHue () {
     tileDisplay.setBrightness(bright)
     tileDisplay.showRainbow(hue, hue)
@@ -25,16 +64,16 @@ function showHue () {
 function adjustHue () {
     if (screenUpToggle == 0) {
         angle = input.rotation(Rotation.Roll)
-        if (angle >= -140 && angle <= -90) {
-            hue += -1
+        if (angle >= -150 && angle <= -30) {
+            hue += -0.5
             if (hue < 1) {
                 hue = 360
             }
             tileDisplay.showRainbow(hue, hue)
             tileDisplay.show()
         }
-        if (angle <= 140 && angle >= 90) {
-            hue += 1
+        if (angle <= 150 && angle >= 30) {
+            hue += 0.5
             if (hue > 360) {
                 hue = 1
             }
@@ -44,7 +83,7 @@ function adjustHue () {
     }
 }
 input.onButtonPressed(Button.B, function () {
-    showRainbow()
+    toggleMode()
 })
 radio.onReceivedValue(function (name, value) {
     if (name == "bright") {
@@ -65,7 +104,7 @@ radio.onReceivedValue(function (name, value) {
 })
 function adjustBrightness () {
     angle = input.rotation(Rotation.Pitch)
-    if (angle >= -140 && angle <= -90) {
+    if (angle >= -150 && angle <= -30) {
         bright += -0.2
         if (bright < 3) {
             bright = 3
@@ -73,23 +112,17 @@ function adjustBrightness () {
         tileDisplay.setBrightness(bright)
         tileDisplay.show()
     }
-    if (angle <= 140 && angle >= 90) {
+    if (angle <= 150 && angle >= 30) {
         bright += 0.2
-        if (bright > 32) {
-            bright = 32
+        if (bright > 128) {
+            bright = 128
         }
         tileDisplay.setBrightness(bright)
         tileDisplay.show()
     }
 }
-input.onGesture(Gesture.ThreeG, function () {
-    if (_3gToggle == 0) {
-        music._playDefaultBackground(music.builtInPlayableMelody(Melodies.JumpUp), music.PlaybackMode.InBackground)
-        _3gToggle = 1
-    } else {
-        music._playDefaultBackground(music.builtInPlayableMelody(Melodies.JumpDown), music.PlaybackMode.InBackground)
-        _3gToggle = 0
-    }
+input.onLogoEvent(TouchButtonEvent.Pressed, function () {
+    printTemperature()
 })
 function showRainbow () {
     tileDisplay.setBrightness(bright)
@@ -115,6 +148,10 @@ let hueTransitionDueMS = 0
 let period = 0
 let _3gToggle = 0
 let screenUpToggle = 0
+let periodChanged = 0
+let temp = 0
+temp = 0
+periodChanged = 0
 screenUpToggle = 0
 _3gToggle = 0
 period = 180
@@ -134,5 +171,14 @@ basic.forever(function () {
     }
     if (screenUpToggle == 1) {
         hueTransition()
+    }
+    if (input.buttonIsPressed(Button.AB)) {
+        adjustPeriod()
+    } else {
+        if (periodChanged == 1) {
+            basic.showString("" + (period))
+            basic.showString("secs")
+            periodChanged = 0
+        }
     }
 })
