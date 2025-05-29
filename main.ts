@@ -83,8 +83,7 @@ function adjustHue () {
 }
 radio.onReceivedString(function (receivedString) {
     if (receivedString == "bright+") {
-        music._playDefaultBackground(music.builtInPlayableMelody(Melodies.BaDing), music.PlaybackMode.InBackground)
-        bright += 1
+        bright += 2
         if (bright > 200) {
             bright = 200
         }
@@ -92,8 +91,7 @@ radio.onReceivedString(function (receivedString) {
         tileDisplay.show()
     }
     if (receivedString == "bright-") {
-        music._playDefaultBackground(music.builtInPlayableMelody(Melodies.BaDing), music.PlaybackMode.InBackground)
-        bright += -1
+        bright += -2
         if (bright < 3) {
             bright = 3
         }
@@ -101,7 +99,6 @@ radio.onReceivedString(function (receivedString) {
         tileDisplay.show()
     }
     if (receivedString == "hue+") {
-        music._playDefaultBackground(music.builtInPlayableMelody(Melodies.BaDing), music.PlaybackMode.InBackground)
         hue += 1
         if (hue > 360) {
             hue = 1
@@ -110,7 +107,6 @@ radio.onReceivedString(function (receivedString) {
         tileDisplay.show()
     }
     if (receivedString == "hue-") {
-        music._playDefaultBackground(music.builtInPlayableMelody(Melodies.BaDing), music.PlaybackMode.InBackground)
         hue += -1
         if (hue < 1) {
             hue = 360
@@ -119,16 +115,14 @@ radio.onReceivedString(function (receivedString) {
         tileDisplay.show()
     }
     if (receivedString == "period+") {
-        music._playDefaultBackground(music.builtInPlayableMelody(Melodies.BaDing), music.PlaybackMode.InBackground)
-        period += 1
+        period += 2
         if (period > 360) {
             period = 360
         }
         calcAndTurnHueTransition()
     }
     if (receivedString == "period-") {
-        music._playDefaultBackground(music.builtInPlayableMelody(Melodies.BaDing), music.PlaybackMode.InBackground)
-        period += -1
+        period += -2
         if (period < 5) {
             period = 5
         }
