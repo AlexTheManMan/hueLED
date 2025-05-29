@@ -1,19 +1,18 @@
 function prepareHueTransition () {
     music._playDefaultBackground(music.builtInPlayableMelody(Melodies.PowerUp), music.PlaybackMode.InBackground)
-    _3gToggle = 0
+    adjustingHueAndBrightness = 0
     showRainbow()
     basic.pause(5000)
-    hueTransitionDueMS = period * 1000 / 360
-    screenUpToggle = 1
+    calcAndTurnHueTransition()
 }
 function toggleMode () {
     if (!(input.buttonIsPressed(Button.AB))) {
-        if (_3gToggle == 0) {
+        if (adjustingHueAndBrightness == 0) {
             music._playDefaultBackground(music.builtInPlayableMelody(Melodies.JumpUp), music.PlaybackMode.InBackground)
-            _3gToggle = 1
+            adjustingHueAndBrightness = 1
         } else {
             music._playDefaultBackground(music.builtInPlayableMelody(Melodies.JumpDown), music.PlaybackMode.InBackground)
-            _3gToggle = 0
+            adjustingHueAndBrightness = 0
         }
     }
 }
@@ -43,18 +42,18 @@ input.onButtonPressed(Button.A, function () {
 })
 input.onGesture(Gesture.ScreenUp, function () {
     if (!(input.buttonIsPressed(Button.AB))) {
-        if (screenUpToggle == 0) {
+        if (runningHueTransition == 0) {
             prepareHueTransition()
         } else {
             music._playDefaultBackground(music.builtInPlayableMelody(Melodies.PowerDown), music.PlaybackMode.InBackground)
-            screenUpToggle = 0
+            runningHueTransition = 0
         }
     }
 })
 function printTemperature () {
     temp = input.temperature()
     basic.showString("" + (temp))
-    basic.showString("C")
+    basic.showString("C ")
 }
 function showHue () {
     tileDisplay.setBrightness(bright)
@@ -62,7 +61,7 @@ function showHue () {
     tileDisplay.show()
 }
 function adjustHue () {
-    if (screenUpToggle == 0) {
+    if (runningHueTransition == 0) {
         angle = input.rotation(Rotation.Roll)
         if (angle >= -150 && angle <= -30) {
             hue += -0.5
@@ -82,26 +81,71 @@ function adjustHue () {
         }
     }
 }
+radio.onReceivedString(function (receivedString) {
+    if (receivedString == "bright+") {
+        music._playDefaultBackground(music.builtInPlayableMelody(Melodies.BaDing), music.PlaybackMode.InBackground)
+        bright += 1
+        if (bright > 200) {
+            bright = 200
+        }
+        tileDisplay.setBrightness(bright)
+        tileDisplay.show()
+    }
+    if (receivedString == "bright-") {
+        music._playDefaultBackground(music.builtInPlayableMelody(Melodies.BaDing), music.PlaybackMode.InBackground)
+        bright += -1
+        if (bright < 3) {
+            bright = 3
+        }
+        tileDisplay.setBrightness(bright)
+        tileDisplay.show()
+    }
+    if (receivedString == "hue+") {
+        music._playDefaultBackground(music.builtInPlayableMelody(Melodies.BaDing), music.PlaybackMode.InBackground)
+        hue += 1
+        if (hue > 360) {
+            hue = 1
+        }
+        tileDisplay.showRainbow(hue, hue)
+        tileDisplay.show()
+    }
+    if (receivedString == "hue-") {
+        music._playDefaultBackground(music.builtInPlayableMelody(Melodies.BaDing), music.PlaybackMode.InBackground)
+        hue += -1
+        if (hue < 1) {
+            hue = 360
+        }
+        tileDisplay.showRainbow(hue, hue)
+        tileDisplay.show()
+    }
+    if (receivedString == "period+") {
+        music._playDefaultBackground(music.builtInPlayableMelody(Melodies.BaDing), music.PlaybackMode.InBackground)
+        period += 1
+        if (period > 360) {
+            period = 360
+        }
+        calcAndTurnHueTransition()
+    }
+    if (receivedString == "period-") {
+        music._playDefaultBackground(music.builtInPlayableMelody(Melodies.BaDing), music.PlaybackMode.InBackground)
+        period += -1
+        if (period < 5) {
+            period = 5
+        }
+        calcAndTurnHueTransition()
+    }
+})
 input.onButtonPressed(Button.B, function () {
     toggleMode()
 })
-radio.onReceivedValue(function (name, value) {
-    if (name == "bright") {
-        music._playDefaultBackground(music.builtInPlayableMelody(Melodies.BaDing), music.PlaybackMode.InBackground)
-        bright = value
-        showHue()
+function transmit () {
+    if (input.runningTime() - lastTransmission >= 1000) {
+        radio.sendValue("hue", hue)
+        radio.sendValue("bright", bright)
+        radio.sendValue("period", period)
+        radio.sendValue("temp", input.temperature())
     }
-    if (name == "hue") {
-        music._playDefaultBackground(music.builtInPlayableMelody(Melodies.BaDing), music.PlaybackMode.InBackground)
-        hue = value
-        screenUpToggle = 0
-        showHue()
-    }
-    if (name == "period") {
-        period = value
-        prepareHueTransition()
-    }
-})
+}
 function adjustBrightness () {
     angle = input.rotation(Rotation.Pitch)
     if (angle >= -150 && angle <= -30) {
@@ -114,8 +158,8 @@ function adjustBrightness () {
     }
     if (angle <= 150 && angle >= 30) {
         bright += 0.2
-        if (bright > 128) {
-            bright = 128
+        if (bright > 200) {
+            bright = 200
         }
         tileDisplay.setBrightness(bright)
         tileDisplay.show()
@@ -124,6 +168,10 @@ function adjustBrightness () {
 input.onLogoEvent(TouchButtonEvent.Pressed, function () {
     printTemperature()
 })
+function calcAndTurnHueTransition () {
+    hueTransitionDueMS = period * 1000 / 360
+    runningHueTransition = 1
+}
 function showRainbow () {
     tileDisplay.setBrightness(bright)
     tileDisplay.showRainbow(1, 360)
@@ -146,14 +194,16 @@ let bright = 0
 let lastHueTransitionTime = 0
 let hueTransitionDueMS = 0
 let period = 0
-let _3gToggle = 0
-let screenUpToggle = 0
+let adjustingHueAndBrightness = 0
+let runningHueTransition = 0
 let periodChanged = 0
 let temp = 0
+let lastTransmission = 0
+lastTransmission = 0
 temp = 0
 periodChanged = 0
-screenUpToggle = 0
-_3gToggle = 0
+runningHueTransition = 0
+adjustingHueAndBrightness = 0
 period = 180
 hueTransitionDueMS = 0
 lastHueTransitionTime = 0
@@ -165,11 +215,11 @@ tileDisplay = Kitronik_Zip_Tile.createZIPTileDisplay(1, 1, Kitronik_Zip_Tile.UBi
 tileDisplay.setBrightness(bright)
 tileDisplay.showColor(Kitronik_Zip_Tile.colors(ZipLedColors.White))
 basic.forever(function () {
-    if (_3gToggle == 1) {
+    if (adjustingHueAndBrightness == 1) {
         adjustHue()
         adjustBrightness()
     }
-    if (screenUpToggle == 1) {
+    if (runningHueTransition == 1) {
         hueTransition()
     }
     if (input.buttonIsPressed(Button.AB)) {
@@ -181,4 +231,5 @@ basic.forever(function () {
             periodChanged = 0
         }
     }
+    transmit()
 })
