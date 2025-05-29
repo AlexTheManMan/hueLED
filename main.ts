@@ -27,8 +27,8 @@ function adjustPeriod () {
     }
     if (angle <= 150 && angle >= 30) {
         period += 1
-        if (period > 360) {
-            period = 360
+        if (period > 600) {
+            period = 600
         }
         periodChanged = 1
     }
@@ -115,14 +115,14 @@ radio.onReceivedString(function (receivedString) {
         tileDisplay.show()
     }
     if (receivedString == "period+") {
-        period += 2
-        if (period > 360) {
-            period = 360
+        period += 5
+        if (period > 600) {
+            period = 600
         }
         calcAndTurnHueTransition()
     }
     if (receivedString == "period-") {
-        period += -2
+        period += -5
         if (period < 5) {
             period = 5
         }
