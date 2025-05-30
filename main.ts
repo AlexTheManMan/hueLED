@@ -5,17 +5,6 @@ function prepareHueTransition () {
     basic.pause(5000)
     calcAndTurnHueTransition()
 }
-function toggleMode () {
-    if (!(input.buttonIsPressed(Button.AB))) {
-        if (adjustingHueAndBrightness == 0) {
-            music._playDefaultBackground(music.builtInPlayableMelody(Melodies.JumpUp), music.PlaybackMode.InBackground)
-            adjustingHueAndBrightness = 1
-        } else {
-            music._playDefaultBackground(music.builtInPlayableMelody(Melodies.JumpDown), music.PlaybackMode.InBackground)
-            adjustingHueAndBrightness = 0
-        }
-    }
-}
 function turnOn () {
     music.play(music.builtinPlayableSoundEffect(soundExpression.giggle), music.PlaybackMode.InBackground)
     sleepMode = 0
@@ -45,9 +34,18 @@ function adjustPeriod () {
 }
 input.onButtonPressed(Button.A, function () {
     if (sleepMode == 0) {
-        toggleMode()
+        toggleHueTransition()
     }
 })
+function toggleHueTransition () {
+    if (adjustingHueAndBrightness == 0) {
+        music._playDefaultBackground(music.builtInPlayableMelody(Melodies.JumpUp), music.PlaybackMode.InBackground)
+        adjustingHueAndBrightness = 1
+    } else {
+        music._playDefaultBackground(music.builtInPlayableMelody(Melodies.JumpDown), music.PlaybackMode.InBackground)
+        adjustingHueAndBrightness = 0
+    }
+}
 input.onGesture(Gesture.ScreenUp, function () {
     if (sleepMode == 0) {
         if (!(input.buttonIsPressed(Button.AB))) {
@@ -150,7 +148,7 @@ radio.onReceivedString(function (receivedString) {
 })
 input.onButtonPressed(Button.B, function () {
     if (sleepMode == 0) {
-        toggleMode()
+        toggleHueTransition()
     }
 })
 function turnOff () {
