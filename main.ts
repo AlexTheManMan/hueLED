@@ -16,6 +16,12 @@ function toggleMode () {
         }
     }
 }
+function turnOn () {
+    music.play(music.builtinPlayableSoundEffect(soundExpression.slide), music.PlaybackMode.InBackground)
+    sleepMode = 0
+    tileDisplay.setBrightness(bright)
+    tileDisplay.showColor(Kitronik_Zip_Tile.colors(ZipLedColors.White))
+}
 function adjustPeriod () {
     angle = input.rotation(Rotation.Roll)
     if (angle >= -150 && angle <= -30) {
@@ -38,15 +44,19 @@ function adjustPeriod () {
     )
 }
 input.onButtonPressed(Button.A, function () {
-    toggleMode()
+    if (sleepMode == 0) {
+        toggleMode()
+    }
 })
 input.onGesture(Gesture.ScreenUp, function () {
-    if (!(input.buttonIsPressed(Button.AB))) {
-        if (runningHueTransition == 0) {
-            prepareHueTransition()
-        } else {
-            music._playDefaultBackground(music.builtInPlayableMelody(Melodies.PowerDown), music.PlaybackMode.InBackground)
-            runningHueTransition = 0
+    if (sleepMode == 0) {
+        if (!(input.buttonIsPressed(Button.AB))) {
+            if (runningHueTransition == 0) {
+                prepareHueTransition()
+            } else {
+                music._playDefaultBackground(music.builtInPlayableMelody(Melodies.PowerDown), music.PlaybackMode.InBackground)
+                runningHueTransition = 0
+            }
         }
     }
 })
@@ -82,62 +92,83 @@ function adjustHue () {
     }
 }
 radio.onReceivedString(function (receivedString) {
-    if (receivedString == "bright+") {
-        bright += 2
-        if (bright > 200) {
-            bright = 200
+    if (sleepMode == 0) {
+        if (receivedString == "bright+") {
+            bright += 2
+            if (bright > 200) {
+                bright = 200
+            }
+            tileDisplay.setBrightness(bright)
+            tileDisplay.show()
         }
-        tileDisplay.setBrightness(bright)
-        tileDisplay.show()
-    }
-    if (receivedString == "bright-") {
-        bright += -2
-        if (bright < 3) {
-            bright = 3
+        if (receivedString == "bright-") {
+            bright += -2
+            if (bright < 3) {
+                bright = 3
+            }
+            tileDisplay.setBrightness(bright)
+            tileDisplay.show()
         }
-        tileDisplay.setBrightness(bright)
-        tileDisplay.show()
-    }
-    if (receivedString == "hue+") {
-        hue += 1
-        if (hue > 360) {
-            hue = 1
+        if (receivedString == "hue+") {
+            hue += 1
+            if (hue > 360) {
+                hue = 1
+            }
+            tileDisplay.showRainbow(hue, hue)
+            tileDisplay.show()
         }
-        tileDisplay.showRainbow(hue, hue)
-        tileDisplay.show()
-    }
-    if (receivedString == "hue-") {
-        hue += -1
-        if (hue < 1) {
-            hue = 360
+        if (receivedString == "hue-") {
+            hue += -1
+            if (hue < 1) {
+                hue = 360
+            }
+            tileDisplay.showRainbow(hue, hue)
+            tileDisplay.show()
         }
-        tileDisplay.showRainbow(hue, hue)
-        tileDisplay.show()
-    }
-    if (receivedString == "period+") {
-        period += 5
-        if (period > 600) {
-            period = 600
+        if (receivedString == "period+") {
+            period += 5
+            if (period > 600) {
+                period = 600
+            }
+            calcAndTurnHueTransition()
         }
-        calcAndTurnHueTransition()
-    }
-    if (receivedString == "period-") {
-        period += -5
-        if (period < 5) {
-            period = 5
+        if (receivedString == "period-") {
+            period += -5
+            if (period < 5) {
+                period = 5
+            }
+            calcAndTurnHueTransition()
         }
-        calcAndTurnHueTransition()
+        if (receivedString == "Sleep") {
+            turnOn()
+        }
+    } else {
+        if (receivedString == "Wake") {
+            turnOff()
+        }
     }
 })
 input.onButtonPressed(Button.B, function () {
-    toggleMode()
+    if (sleepMode == 0) {
+        toggleMode()
+    }
 })
+function turnOff () {
+    music.play(music.builtinPlayableSoundEffect(soundExpression.giggle), music.PlaybackMode.InBackground)
+    sleepMode = 1
+    runningHueTransition = 0
+    adjustingHueAndBrightness = 0
+    tileDisplay.clear()
+}
 function transmit () {
     if (input.runningTime() - lastTransmission >= 1000) {
-        radio.sendValue("hue", hue)
-        radio.sendValue("bright", bright)
-        radio.sendValue("period", period)
-        radio.sendValue("temp", input.temperature())
+        if (sleepMode == 0) {
+            radio.sendValue("hue", hue)
+            radio.sendValue("bright", bright)
+            radio.sendValue("period", period)
+            radio.sendValue("temp", input.temperature())
+        }
+        radio.sendValue("sleep", sleepMode)
     }
 }
 function adjustBrightness () {
@@ -193,6 +224,8 @@ let runningHueTransition = 0
 let periodChanged = 0
 let temp = 0
 let lastTransmission = 0
+let sleepMode = 0
+sleepMode = 1
 lastTransmission = 0
 temp = 0
 periodChanged = 0
