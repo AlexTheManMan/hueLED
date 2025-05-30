@@ -139,11 +139,11 @@ radio.onReceivedString(function (receivedString) {
             }
             calcAndTurnHueTransition()
         }
-        if (receivedString == "Sleep") {
+        if (receivedString == "sleep") {
             turnOn()
         }
     } else {
-        if (receivedString == "Wake") {
+        if (receivedString == "wake") {
             turnOff()
         }
     }
@@ -225,7 +225,7 @@ let periodChanged = 0
 let temp = 0
 let lastTransmission = 0
 let sleepMode = 0
-sleepMode = 1
+sleepMode = 0
 lastTransmission = 0
 temp = 0
 periodChanged = 0
