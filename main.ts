@@ -17,7 +17,7 @@ function toggleMode () {
     }
 }
 function turnOn () {
-    music.play(music.builtinPlayableSoundEffect(soundExpression.slide), music.PlaybackMode.InBackground)
+    music.play(music.builtinPlayableSoundEffect(soundExpression.giggle), music.PlaybackMode.InBackground)
     sleepMode = 0
     tileDisplay.setBrightness(bright)
     tileDisplay.showColor(Kitronik_Zip_Tile.colors(ZipLedColors.White))
@@ -93,6 +93,9 @@ function adjustHue () {
 }
 radio.onReceivedString(function (receivedString) {
     if (sleepMode == 0) {
+        if (receivedString == "sleep") {
+            turnOff()
+        }
         if (receivedString == "bright+") {
             bright += 2
             if (bright > 200) {
@@ -139,9 +142,6 @@ radio.onReceivedString(function (receivedString) {
             }
             calcAndTurnHueTransition()
         }
-        if (receivedString == "sleep") {
-            turnOff()
-        }
     } else {
         if (receivedString == "wake") {
             turnOn()
@@ -154,15 +154,15 @@ input.onButtonPressed(Button.B, function () {
     }
 })
 function turnOff () {
-    music.play(music.builtinPlayableSoundEffect(soundExpression.giggle), music.PlaybackMode.InBackground)
-    sleepMode = 1
+    music.play(music.builtinPlayableSoundEffect(soundExpression.slide), music.PlaybackMode.InBackground)
     runningHueTransition = 0
     adjustingHueAndBrightness = 0
+    sleepMode = 1
     tileDisplay.clear()
     tileDisplay.show()
 }
 function transmit () {
-    if (input.runningTime() - lastTransmission >= 1000) {
+    if (input.runningTime() - lastTransmission >= 300) {
         if (sleepMode == 0) {
             radio.sendValue("hue", hue)
             radio.sendValue("bright", bright)
@@ -170,6 +170,7 @@ function transmit () {
             radio.sendValue("temp", input.temperature())
         }
         radio.sendValue("sleep", sleepMode)
+        lastTransmission = input.runningTime()
     }
 }
 function adjustBrightness () {
