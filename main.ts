@@ -140,11 +140,11 @@ radio.onReceivedString(function (receivedString) {
             calcAndTurnHueTransition()
         }
         if (receivedString == "sleep") {
-            turnOn()
+            turnOff()
         }
     } else {
         if (receivedString == "wake") {
-            turnOff()
+            turnOn()
         }
     }
 })
@@ -159,6 +159,7 @@ function turnOff () {
     runningHueTransition = 0
     adjustingHueAndBrightness = 0
     tileDisplay.clear()
+    tileDisplay.show()
 }
 function transmit () {
     if (input.runningTime() - lastTransmission >= 1000) {
